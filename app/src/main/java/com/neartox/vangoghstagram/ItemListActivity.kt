@@ -3,15 +3,16 @@ package com.neartox.vangoghstagram
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.Toolbar
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.RecyclerView
+import androidx.appcompat.widget.Toolbar
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.annotation.NonNull
 
 
 import com.neartox.vangoghstagram.dummy.DummyContent
@@ -32,29 +33,24 @@ class ItemListActivity : AppCompatActivity() {
    */
   private var mTwoPane: Boolean = false
 
-  @Override
-  protected fun onCreate(savedInstanceState: Bundle) {
+  override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_item_list)
 
-    val toolbar = findViewById(R.id.toolbar) as Toolbar
+    val toolbar = findViewById<Toolbar>(R.id.toolbar)
     setSupportActionBar(toolbar)
-    toolbar.setTitle(getTitle())
+    toolbar.title = title
 
-    val fab = findViewById(R.id.fab) as FloatingActionButton
-    fab.setOnClickListener(object : View.OnClickListener() {
-      @Override
-      fun onClick(view: View) {
-        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-            .setAction("Action", null).show()
-      }
-    })
+    val fab = findViewById<FloatingActionButton>(R.id.fab)
+    fab.setOnClickListener { view ->
+      Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+          .setAction("Action", null).show()
+    }
 
-    val recyclerView = findViewById(R.id.item_list)
-    assert(recyclerView != null)
-    setupRecyclerView(recyclerView as RecyclerView)
+    val recyclerView = findViewById<RecyclerView>(R.id.item_list)!!
+    setupRecyclerView(recyclerView)
 
-    if (findViewById(R.id.item_detail_container) != null) {
+    if(findViewById<View>(R.id.item_detail_container) != null) {
       // The detail container view will be present only in the
       // large-screen layouts (res/values-w900dp).
       // If this view is present, then the
@@ -63,52 +59,50 @@ class ItemListActivity : AppCompatActivity() {
     }
   }
 
-  private fun setupRecyclerView(@NonNull recyclerView: RecyclerView) {
-    recyclerView.setAdapter(SimpleItemRecyclerViewAdapter(DummyContent.ITEMS))
+  private fun setupRecyclerView(recyclerView: androidx.recyclerview.widget.RecyclerView) {
+    recyclerView.adapter = SimpleItemRecyclerViewAdapter(DummyContent.ITEMS)
   }
 
-  inner class SimpleItemRecyclerViewAdapter(private val mValues: List<DummyContent.DummyItem>) : RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
+  inner class SimpleItemRecyclerViewAdapter(private val mValues: List<DummyContent.DummyItem>) : androidx.recyclerview.widget.RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
 
-    @Override
+    override
     fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-      val view = LayoutInflater.from(parent.getContext())
+      val view = LayoutInflater.from(parent.context)
           .inflate(R.layout.item_list_content, parent, false)
       return ViewHolder(view)
     }
 
-    @Override
+    override
     fun onBindViewHolder(holder: ViewHolder, position: Int) {
       holder.mItem = mValues[position]
-      holder.mIdView.setText(mValues[position].id)
-      holder.mContentView.setText(mValues[position].content)
+      holder.mIdView.text = mValues[position].id
+      holder.mContentView.text = mValues[position].content
 
-      holder.mView.setOnClickListener(object : View.OnClickListener() {
-        @Override
-        fun onClick(v: View) {
-          if (mTwoPane) {
-            val arguments = Bundle()
-            arguments.putString(ItemDetailFragment.ARG_ITEM_ID, holder.mItem!!.id)
-            val fragment = ItemDetailFragment()
-            fragment.setArguments(arguments)
-            getSupportFragmentManager().beginTransaction()
-                .replace(R.id.item_detail_container, fragment)
-                .commit()
-          } else {
-            val context = v.getContext()
-            val intent = Intent(context, ItemDetailActivity::class.java)
-            intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, holder.mItem!!.id)
+      holder.mView.setOnClickListener { v ->
+        if(mTwoPane) {
+          val arguments = Bundle()
+          arguments.putString(ItemDetailFragment.ARG_ITEM_ID, holder.mItem!!.id)
+          val fragment = ItemDetailFragment()
+          fragment.arguments = arguments
+          supportFragmentManager.beginTransaction()
+              .replace(R.id.item_detail_container, fragment)
+              .commit()
+        } else {
+          val context = v.context
+          val intent = Intent(context, ItemDetailActivity::class.java)
+          intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, holder.mItem!!.id)
 
-            context.startActivity(intent)
-          }
+          context.startActivity(intent)
         }
-      })
+      }
     }
 
-    val itemCount: Int
-      @Override
-      get() = mValues.size()
 
-    inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
+    override fun getItemCount(): Int {
+      return mValues.size
+    }
+
+    inner class ViewHolder(val mView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(mView) {
       val mIdView: TextView
       val mContentView: TextView
       var mItem: DummyContent.DummyItem? = null
@@ -118,9 +112,8 @@ class ItemListActivity : AppCompatActivity() {
         mContentView = mView.findViewById(R.id.content) as TextView
       }
 
-      @Override
-      fun toString(): String {
-        return super.toString() + " '" + mContentView.getText() + "'"
+      override fun toString(): String {
+        return super.toString() + " '" + mContentView.text + "'"
       }
     }
   }
